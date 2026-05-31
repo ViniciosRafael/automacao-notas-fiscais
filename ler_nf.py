@@ -18,11 +18,13 @@ def extrair_dados_nota(pdf_texto):
         numero_nf = match_numero_nf.group(1)
     else:
         numero_nf = None
+
     data_emissao = match_data_emissao.group(1) 
     if match_data_emissao:
         data_emissao = match_data_emissao.group(1)
     else:
         data_emissao = None
+        
     valor_total  = match_valor_total.group(1)  
     if match_valor_total :
         valor_total  = match_valor_total.group(1)  
