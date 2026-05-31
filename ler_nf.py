@@ -57,10 +57,14 @@ def main():
     if contador_arquivos == 0:
         raise Exception("Nenhum arquivo encontrado no diretório.")
 
+    planilha = os.path.join(diretorio, "dados_notas_fiscais.xlsx")
+    if os.path.exists(planilha):
+        os.remove(planilha) # deleta o arquivo Excel existente para evitar duplicação de dados
+    
     wb = Workbook() # cria um novo arquivo Excel
     ws = wb.active # seleciona a planilha ativa
     ws.title = "Dados das Notas Fiscais" # define o título da planilha
-    
+
 
     ws['A1'] = "Número da Nota Fiscal"
     ws['B1'] = "Data de Emissão"
