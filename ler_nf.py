@@ -8,8 +8,8 @@ def extrair_dados_nota(pdf_texto):
     padrao_numero_nf = r'Data\s+de\s+Emiss[aã]o[^\n]*\n+\s*\d{2}/\d{2}/\d{4}\s+\d{2}/\d{2}/\d{4}\s+(\d+)' # expressão regular para encontrar o número da nota fiscal
     numero_data_padrao = r'Data\s+de\s+Emiss[aã]o[^\n]*\n+\s*(\d{2}/\d{2}/\d{4})' # expressão regular para encontrar a data de emissão
     valor_total_padrao = r'VALOR\s+TOTAL\s+DA\s+NOTA\s*\n+\s*R\$\s*([\d.,]+)' # expressão regular para encontrar o valor total
-    valor_bruto_padrao = r'VALOR\s+BRUTO\s+DA\s+NOTA\s*\n+\s*R\$\s*([\d.,]+)' # expressão regular para encontrar o valor bruto
-    total_impostos_padrao = r'TOTAL\s+IMPOSTOS\s+DA\s+NOTA\s*\n+\s*R\$\s*([\d.,]+)' # expressão regular para encontrar o total de impostos
+    valor_bruto_padrao = r'Subtotal[^\n]*\n\s*R\$\s*([\d.,]+)' # expressão regular para encontrar o valor bruto
+    total_impostos_padrao = r'Total\s+de\s+Impostos[^\n]*\n\s*R\$\s*[\d.,]+\s+R\$\s*[\d.,]+\s+R\$\s*([\d.,]+)' # expressão regular para encontrar o total de impostos
 
     match_numero_nf = re.search(padrao_numero_nf,   pdf_texto, re.IGNORECASE) # procura o número da nota fiscal no texto extraído
     match_data_emissao = re.search(numero_data_padrao, pdf_texto, re.IGNORECASE) # procura a data de emissão no texto extraído
@@ -93,7 +93,7 @@ def main():
             ws[f'E{ultima_linha}'] = "Processado" if numero_nf and data_emissao and valor_total else "Verificar" # escreve o status "Processado" na célula correspondente
             ws[f'F{ultima_linha}'] = str(datetime.now()) # escreve a data de processamento na célula correspondente
             ws[f'G{ultima_linha}'] = calcular_carga_tributaria(total_impostos, valor_bruto) # escreve a carga tributária calculada na célula correspondente
-            
+
             ultima_linha += 1 # incrementa a variável para a próxima linha
         wb.save(diretorio + "\\dados_notas_fiscais.xlsx") # salva o arquivo Excel com os dados extraídos
 
