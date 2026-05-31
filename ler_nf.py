@@ -1,0 +1,79 @@
+from datetime import datetime
+import os
+from openpyxl import Workbook, load_workbook  
+import pdfplumber
+import re
+
+def extrair_dados_nota(pdf_texto):
+    padrao_numero_nf = r'Data\s+de\s+Emiss[aã]o[^\n]*\n+\s*\d{2}/\d{2}/\d{4}\s+\d{2}/\d{2}/\d{4}\s+(\d+)' # expressão regular para encontrar o número da nota fiscal
+    numero_data_padrao = r'Data\s+de\s+Emiss[aã]o[^\n]*\n+\s*(\d{2}/\d{2}/\d{4})' # expressão regular para encontrar a data de emissão
+    valor_total_padrao = r'VALOR\s+TOTAL\s+DA\s+NOTA\s*\n+\s*R\$\s*([\d.,]+)' # expressão regular para encontrar o valor total
+
+    match_numero_nf = re.search(padrao_numero_nf,   pdf_texto, re.IGNORECASE) # procura o número da nota fiscal no texto extraído
+    match_data_emissao = re.search(numero_data_padrao, pdf_texto, re.IGNORECASE) # procura a data de emissão no texto extraído
+    match_valor_total  = re.search(valor_total_padrao, pdf_texto, re.IGNORECASE) # procura o valor total no texto extraído
+
+    numero_nf = match_numero_nf.group(1)
+    if match_numero_nf:
+        numero_nf = match_numero_nf.group(1)
+    else:
+        numero_nf = None
+    data_emissao = match_data_emissao.group(1) 
+    if match_data_emissao:
+        data_emissao = match_data_emissao.group(1)
+    else:
+        data_emissao = None
+    valor_total  = match_valor_total.group(1)  
+    if match_valor_total :
+        valor_total  = match_valor_total.group(1)  
+    else:
+        valor_total  = None
+
+    return numero_nf, data_emissao, valor_total
+
+def main():
+    diretorio = r"C:\UNISC\Fabrica_de_software\segunda\files" # caminho do diretório onde estão os arquivos
+    arquivos = os.listdir(diretorio) # lista os arquivos no diretório
+    contador_arquivos = len(arquivos) # conta o número de arquivos
+
+    if contador_arquivos == 0:
+        raise Exception("Nenhum arquivo encontrado no diretório.")
+
+    wb = Workbook() # cria um novo arquivo Excel
+    ws = wb.active # seleciona a planilha ativa
+    ws.title = "Dados das Notas Fiscais" # define o título da planilha
+
+    ws['A1'] = "Número da Nota Fiscal"
+    ws['B1'] = "Data de Emissão"
+    ws['C1'] = "Valor Total"
+    ws['D1'] = "Nome do Arquivo"
+    ws['E1'] = "Status"
+    ws['F1'] = "Data de processamento"
+
+    ultima_linha = ws.max_row + 1 # verifica a última linha preenchida para começar a escrever os dados a partir da próxima linha
+
+    for arquivo in arquivos:
+        if arquivo.endswith(".pdf"): #se o arquivo for um PDF
+            with pdfplumber.open(diretorio + "\\" + arquivo) as pdf: # abre o PDF
+                primeira_pagina = pdf.pages[0] # extrai o texto da primeira página do PDF
+                pdf_texto = primeira_pagina.extract_text() # armazena o texto extraído em uma variável
+                for page in pdf.pages: # itera por todas as páginas do PDF
+                    text = page.extract_text() # extrai o texto da página
+
+            numero_nf, data_emissao, valor_total = extrair_dados_nota(pdf_texto) # chama a função para extrair os dados da nota fiscal
+            """if numero_nf:
+                ws[f'A{ultima_linha}'] = numero_nf
+            else:
+                ws[f'A{ultima_linha}'] = "Número não encontrado"""
+            ws[f'A{ultima_linha}'] = numero_nf or "Número da nota fiscal não encontrado" # escreve o número da nota fiscal ou uma mensagem caso não seja encontrado (utilizando o operador "or" para simplificar a lógica, se numero_nf for None, a não encontrada seá escrita na célula, se não escreve o valor)
+            ws[f'B{ultima_linha}'] = data_emissao or "Data de emissão não encontrada" # escreve a data de emissão ou uma mensagem caso não seja encontrada
+            ws[f'C{ultima_linha}'] = valor_total  or "Valor total não encontrado" # escreve o valor total ou uma mensagem caso não seja encontrado
+            ws[f'D{ultima_linha}'] = arquivo # escreve o nome do arquivo na célula correspondente
+            ws[f'E{ultima_linha}'] = "Processado" if numero_nf and data_emissao and valor_total else "Verificar" # escreve o status "Processado" na célula correspondente
+            ws[f'F{ultima_linha}'] = str(datetime.now()) # escreve a data de processamento na célula correspondente
+
+            ultima_linha += 1 # incrementa a variável para a próxima linha
+        wb.save(diretorio + "\\dados_notas_fiscais.xlsx") # salva o arquivo Excel com os dados extraídos
+
+if __name__ == "__main__":
+    main()
