@@ -60,6 +60,7 @@ def main():
     wb = Workbook() # cria um novo arquivo Excel
     ws = wb.active # seleciona a planilha ativa
     ws.title = "Dados das Notas Fiscais" # define o título da planilha
+    
 
     ws['A1'] = "Número da Nota Fiscal"
     ws['B1'] = "Data de Emissão"
@@ -70,7 +71,7 @@ def main():
     ws['G1'] = "Carga Tributária (%)" 
 
     ultima_linha = ws.max_row + 1 # verifica a última linha preenchida para começar a escrever os dados a partir da próxima linha
-
+    valor_total_nf = 0 # inicializa a variável para acumular o valor total das notas fiscais processadas
     for arquivo in arquivos:
         if arquivo.endswith(".pdf"): #se o arquivo for um PDF
             with pdfplumber.open(diretorio + "\\" + arquivo) as pdf: # abre o PDF
@@ -80,11 +81,6 @@ def main():
                     text = page.extract_text() # extrai o texto da página
 
             numero_nf, data_emissao, valor_total, valor_bruto, total_impostos = extrair_dados_nota(pdf_texto) # chama a função para extrair os dados da nota fiscal
-
-            """if numero_nf:
-                ws[f'A{ultima_linha}'] = numero_nf
-            else:
-                ws[f'A{ultima_linha}'] = "Número não encontrado"""
             
             ws[f'A{ultima_linha}'] = numero_nf or "Número da nota fiscal não encontrado" # escreve o número da nota fiscal ou uma mensagem caso não seja encontrado (utilizando o operador "or" para simplificar a lógica, se numero_nf for None, a não encontrada seá escrita na célula, se não escreve o valor)
             ws[f'B{ultima_linha}'] = data_emissao or "Data de emissão não encontrada" # escreve a data de emissão ou uma mensagem caso não seja encontrada
@@ -93,8 +89,10 @@ def main():
             ws[f'E{ultima_linha}'] = "Processado" if numero_nf and data_emissao and valor_total else "Verificar" # escreve o status "Processado" na célula correspondente
             ws[f'F{ultima_linha}'] = str(datetime.now()) # escreve a data de processamento na célula correspondente
             ws[f'G{ultima_linha}'] = calcular_carga_tributaria(total_impostos, valor_bruto) # escreve a carga tributária calculada na célula correspondente
-
+            valor_total_nf += float(valor_total.replace('.', '').replace(',', '.'))  # converte e acumula
             ultima_linha += 1 # incrementa a variável para a próxima linha
+        
+        ws[f'C{ultima_linha+1}'] = valor_total_nf # escreve o valor total das notas fiscais processadas na célula correspondente
         wb.save(diretorio + "\\dados_notas_fiscais.xlsx") # salva o arquivo Excel com os dados extraídos
 
 if __name__ == "__main__":
