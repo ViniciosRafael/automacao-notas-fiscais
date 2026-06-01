@@ -96,8 +96,8 @@ def main():
             valor_total_nf += float(valor_total.replace('.', '').replace(',', '.'))  # converte e acumula
             ultima_linha += 1 # incrementa a variável para a próxima linha
         
-        ws[f'C{ultima_linha+1}'] = valor_total_nf # escreve o valor total das notas fiscais processadas na célula correspondente
-        wb.save(diretorio + "\\dados_notas_fiscais.xlsx") # salva o arquivo Excel com os dados extraídos
+    ws[f'C{ultima_linha+1}'] = valor_total_nf # escreve o valor total das notas fiscais processadas na célula correspondente
+    wb.save(diretorio + "\\dados_notas_fiscais.xlsx") # salva o arquivo Excel com os dados extraídos
 
 if __name__ == "__main__":
     main()
