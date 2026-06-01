@@ -81,8 +81,8 @@ def main():
             with pdfplumber.open(diretorio + "\\" + arquivo) as pdf: # abre o PDF
                 primeira_pagina = pdf.pages[0] # extrai o texto da primeira página do PDF
                 pdf_texto = primeira_pagina.extract_text() # armazena o texto extraído em uma variável
-                for page in pdf.pages: # itera por todas as páginas do PDF
-                    text = page.extract_text() # extrai o texto da página
+                #for page in pdf.pages: # itera por todas as páginas do PDF
+                    #text = page.extract_text() # extrai o texto da página
 
             numero_nf, data_emissao, valor_total, valor_bruto, total_impostos = extrair_dados_nota(pdf_texto) # chama a função para extrair os dados da nota fiscal
             
